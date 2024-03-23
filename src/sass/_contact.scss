@@ -1,0 +1,14 @@
+.contact {
+  padding: 100px 0;
+  text-align: center;
+  & p {
+    font-size: 48px;
+    font-family: visby;
+    margin-bottom: 60px;
+    line-height: 70px;
+  }
+  & a {
+    @include primary_button;
+    margin: 0;
+  }
+}

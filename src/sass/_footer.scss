@@ -1,0 +1,29 @@
+footer {
+  background-color: $black;
+  color: $white;
+  padding: 60px 0;
+  width: 100%;
+  & .footer {
+    width: 80%;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    margin: auto;
+    gap: 3rem;
+    & div {
+      & .footer-title {
+        font-size: 20px;
+        font-family: visby;
+        margin: 10px 0;
+      }
+      & a {
+        text-decoration: none;
+        color: $white;
+        display: block;
+      }
+    }
+  }
+  & >p{
+    text-align: center;
+    margin-top: 80px;
+  }
+}

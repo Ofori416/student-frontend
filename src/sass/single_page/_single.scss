@@ -1,0 +1,37 @@
+.single {
+  text-align: center;
+  margin-bottom: 100px;
+  & .title {
+    font-family: visby;
+    font-size: 48px;
+    margin: 100px 0 100px 0;
+    text-align: center;
+  }
+  & .info {
+    background-color: $light_blue;
+    color: $deep_blue;
+    width: 40%;
+    margin: -50px auto 50px auto;
+    padding: 15px 40px;
+    border: 1px solid $blue;
+    border-radius: 8px;
+    display: grid;
+    grid-template-columns: 1fr 10fr;
+    text-align: left;
+    gap: 1rem;
+  }
+  & .dragger {
+    width: 40%;
+    margin: auto;
+  }
+  & .slider {
+    width: 40%;
+    margin: 30px auto;
+    & p {
+      text-align: left;
+    }
+  }
+  & a {
+    @include primary_button;
+  }
+}

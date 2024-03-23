@@ -1,0 +1,50 @@
+.more {
+  background-color: $blue;
+  color: $white;
+  & .avaatar {
+    position: absolute;
+    left: 40px;
+    top: 1070px;
+    @include animate;
+  }
+  & .sharp {
+    position: absolute;
+    right: 50px;
+    top: 1410px;
+    @include animate;
+  }
+  & .more-inner {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 3rem;
+    width: 80%;
+    align-items: center;
+    margin: auto;
+    padding: 100px 0;
+    & .left-grid {
+      & .more-title {
+        font-family: visby;
+        font-size: 48px;
+        line-height: 70px;
+
+      }
+      & .more-text {
+        margin: 40px 0;
+      }
+      & a {
+        text-decoration: none;
+        color: $white;
+        border: 2px solid $white;
+        padding: 15px 90px;
+        display: inline-block;
+        &:hover {
+          background-color: $white;
+          color: $blue;
+        }
+      }
+    }
+    & img {
+      width: 100%;
+    }
+  }
+}

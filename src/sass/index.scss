@@ -1,0 +1,22 @@
+@import "config";
+
+// Home page imports
+@import "navbar";
+@import "hero";
+@import "more";
+@import "testimonies";
+@import "why";
+@import "contact";
+@import "footer";
+
+// single page imports
+@import "./single_page/single";
+
+//sponsor page
+@import "sponsor";
+
+//coming soon page
+@import "coming_soon";
+//404 page
+@import "404";
+@import "responsive";
