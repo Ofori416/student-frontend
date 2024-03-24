@@ -6,7 +6,17 @@ import mixpanel from "mixpanel-browser";
 mixpanel.init("c2d2405209ce3c42e4f2953c6859580a");
 import { message, Upload } from "antd";
 import { BsFillInfoCircleFill } from "react-icons/bs";
-
+import {
+  Table,
+  Thead,
+  Tbody,
+  Select,
+  Tr,
+  Th,
+  Td,
+  TableCaption,
+  TableContainer,
+} from '@chakra-ui/react'
 
 function Single() {
   const [currentFile, setCurrentFile] = useState("");
@@ -38,217 +48,151 @@ function Single() {
     }
   }
 
+  const [formData, setFormData] = useState({
+    indexNumber: "",
+    email: "",
+    gender: "",
+    level: "",
+    gpaScore: "",
+    classMode: "",
+    studyMode: "",
+    internetAvailability: "",
+  });
 
-  const fetchData = async () => {
-    try {
-      const { gender, shape } = await processData(currentFile);
-      const response = await fetch("http://localhost:5000/api/filter/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          gender: gender,
-          shape: shape,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log("API Response:", data);
-
-        // Extract and log the URLs from the API response
-        const imageUrls = data.map(item => item.url);
-        // console.log("API Response URLs:", imageUrls);
-        setImages(imageUrls)
-      } else {
-        console.log("API Request Failed");
-      }
-    } catch (error) {
-      console.error("API Request Error:", error);
-    }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
-  // processData();
-  // fetchData();
-
-  const [isActive, setIsActive] = useState(false);
-
-  const videoConstraints = {
-    facingMode: 'user',
-  };
-
-  const toggleWebcam = async () => {
-    setIsActive(!isActive);
-    const cameraDataResponse = await fetchCameraData();
-    setCameraData(cameraDataResponse);
-    const { gender, shape } = cameraDataResponse;
-    setGender(gender);
-    setShape(shape);
-    await fetchData();
-  };
-
-  const props = {
-    name: "file",
-    multiple: false,
-    action: "http://localhost:3000/",
-    beforeUpload: () => false,
-    onChange(info) {
-      if (currentFile) {
-        message.success(`${info.file.name} file removed successfully.`);
-      } else {
-        message.success(`${info.file.name} file uploaded successfully.`);
-        setCurrentFile(info.file);
-      }
-    },
-    onDrop(e) {
-      console.log("Dropped files", e.dataTransfer.files);
-      const droppedFiles = e.dataTransfer.files;
-      for (let i = 0; i < droppedFiles.length; i++) {
-        processData(droppedFiles[i]);
-      }
-      fetchData()
-    },
-  };
-  const onChange = (e) => {
-    setQuality(e / 100);
-  };
-  const download = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    new Compressor(currentFile, {
-      quality: quality,
-
-      success(result) {
-        if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-          return window.navigator.msSaveOrOpenBlob(result);
-        } else {
-          const data = window.URL.createObjectURL(result);
-          const link = document.createElement("a");
-          link.href = data;
-          link.download = `${currentFile.name}`;
-          document.body.appendChild(link);
-          link.click();
-          toast({
-            title: "Compressed image downloaded",
-            description: `Size of compressed image is ${(
-              result.size /
-              1024 /
-              1024
-            ).toFixed(3)} MB`,
-            status: "success",
-            duration: 9000,
-            isClosable: true,
-          });
-          mixpanel.track("single compression");
-        }
-      },
-      error(err) {
-        console.log(err.message);
-        if (
-          err.message === "The first argument must be a File or Blob object."
-        ) {
-          toast({
-            title: "Please upload your image",
-            status: "error",
-            duration: 9000,
-            isClosable: true,
-          });
-        }
-      },
-    });
+    console.log(formData);
+    // You can perform additional actions here, such as sending the form data to a server
   };
 
   return (
     <div className="single-parent">
       <div className="left">
         <div className="single">
-          <p className="title">Single Student</p>
+          <p className="title">The Single Student</p>
 
-          <div className="info">
+          {/* <div className="info">
             <BsFillInfoCircleFill size={30} />
             <p>
               Enter your details for Prediction
             </p>
-          </div>
+          </div> */}
 
           <div>
-            <form>
-              <VStack spacing={4}>
+            <form className="forms" onSubmit={handleSubmit}>
+              <VStack spacing={3}>
                 <FormControl>
+                  <FormLabel>Index Number</FormLabel>
                   <Input
                     type="text"
-                    id="hs-firstname-contacts-1"
-                    placeholder="Index Number"
+                    name="indexNumber"
+                    placeholder="First Name"
                     borderRadius="lg"
+                    onChange={handleChange}
                   />
                 </FormControl>
                 <FormControl>
+                  <FormLabel>Email</FormLabel>
                   <Input
                     type="email"
-                    id="hs-firstname-contacts-1"
+                    name="email"
                     placeholder="Email"
                     borderRadius="lg"
+                    onChange={handleChange}
                   />
                 </FormControl>
 
                 <FormControl>
-                  <Input
-                    type="text"
-                    id="hs-firstname-contacts-1"
-                    placeholder="Gender"
-                    borderRadius="lg"
-                  />
+                  <FormLabel>Gender</FormLabel>
+                  <Select
+                    name="gender"
+                    placeholder="Select option"
+                    onChange={handleChange}
+                  >
+                    <option value="0">Male</option>
+                    <option value="1">Female</option>
+                  </Select>
                 </FormControl>
 
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <FormControl style={{ display: 'flex', gap: '10px' }}>
                   <FormControl>
-                    <Input
-                      type="text"
-                      id="hs-firstname-contacts-1"
-                      placeholder="Level"
-                      borderRadius="lg"
-                    />
+                    <FormLabel>Level</FormLabel>
+                    <Select
+                      name="level"
+                      placeholder="Select option"
+                      onChange={handleChange}
+                    >
+                      <option value="L400">L400</option>
+                      <option value="L300">L300</option>
+                      <option value="L200">L200</option>
+                      <option value="L100">L100</option>
+                    </Select>
                   </FormControl>
                   <FormControl>
-                    <Input
+                    <FormLabel>Internet Availability</FormLabel>
+                    <Select
                       type="text"
-                      id="hs-firstname-contacts-1"
-                      placeholder="Internet Availability"
+                      name="internetAvailability"
+                      placeholder="Select Option"
                       borderRadius="lg"
-                    />
+                      onChange={handleChange}
+                    >
+                      <option value="L400">L400</option>
+                      <option value="L300">L300</option>
+                      <option value="L200">L200</option>
+                      <option value="L100">L100</option>
+                    </Select>
                   </FormControl>
-                </div>
+                </FormControl>
 
                 <FormControl>
+                  <FormLabel>GPA Score</FormLabel>
                   <Input
-                    type="text"
-                    id="hs-firstname-contacts-1"
-                    placeholder="GPA Score"
+                    type="number"
+                    name="gpaScore"
+                    placeholder="Enter your GPA Score"
                     borderRadius="lg"
+                    onChange={handleChange}
                   />
                 </FormControl>
 
-                <div style={{ display: 'flex', gap: '10px' }}>
+                <FormControl style={{ display: 'flex', gap: '10px' }}>
                   <FormControl>
-                    <Input
-                      type="text"
-                      id="hs-firstname-contacts-1"
-                      placeholder="Class Mode"
-                      borderRadius="lg"
-                    />
-                  </FormControl>
-
-                  <FormControl>
-                    <Input
-                      type="text"
-                      id="hs-firstname-contacts-2"
-                      placeholder="Study Mode"
+                    <FormLabel>Class Mode</FormLabel>
+                    <Select
+                      name="classMode"
+                      placeholder="Select option"
+                      onChange={handleChange}
                       borderRadius="lg"
                       width='auto'
-
-                    />
+                    >
+                      <option value="option1">LMS</option>
+                      <option value="option2">Class Room</option>
+                    </Select>
                   </FormControl>
-                </div>
+
+                  <FormControl>
+                    <FormLabel>Study Mode</FormLabel>
+                    <Select
+                      type="text"
+                      name="studyMode"
+                      placeholder="Study Mode"
+                      borderRadius="lg"
+                      onChange={handleChange}
+                      width='auto'
+                    >
+                      <option value="option1">Online Resources</option>
+                      <option value="option2">Lecture Notes</option>
+                      <option value="option3">Personal Notes</option>
+                      <option value="option3">Forums</option>
+                    </Select>
+                  </FormControl>
+                </FormControl>
 
                 <Button
                   type="submit"
@@ -270,14 +214,51 @@ function Single() {
           </div>
 
           <div>
-            {/* <LoadingBar /> */}
           </div>
         </div>
       </div>
       <div className="right">
         <div className="big-card">
-          <div className="image-gallery">
-          </div>
+          <TableContainer>
+            <Table variant='striped' colorScheme='blue'>
+              <TableCaption>Imperial to metric conversion factors</TableCaption>
+              <Thead>
+                <Tr>
+                  <Th>Index</Th>
+                  <Th>Email</Th>
+                  <Th>Gender</Th>
+                  <Th>Level</Th>
+                  <Th>Actions</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                <Tr>
+                  <Td>inches</Td>
+                  <Td>millimetres (mm)</Td>
+                  <Td >25.4</Td>
+                  <Td >25.4</Td>
+                  <Td ><Button colorScheme='blue'>Button</Button></Td>
+
+                </Tr>
+                <Tr>
+                  <Td>feet</Td>
+                  <Td>centimetres (cm)</Td>
+                  <Td >30.48</Td>
+                  <Td >25.4</Td>
+                  <Td ><Button colorScheme='blue'>Button</Button></Td>
+
+                </Tr>
+                <Tr>
+                  <Td>yards</Td>
+                  <Td>metres (m)</Td>
+                  <Td >0.91444</Td>
+                  <Td >25.4</Td>
+                  <Td ><Button colorScheme='blue'>Button</Button></Td>
+
+                </Tr>
+              </Tbody>
+            </Table>
+          </TableContainer>
         </div>
       </div>
     </div>

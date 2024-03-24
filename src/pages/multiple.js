@@ -158,12 +158,11 @@ function Multiple() {
     <div className="single-parent">
       <div className="left">
         <div className="single">
-          <p className="title">Image try-on</p>
+          <p className="title">Multiple Student</p>
           <div className="info">
             <BsFillInfoCircleFill size={30} />
             <p>
-              Note that for multiple images, the download is automatic so make sure
-              you set the quality before uploading
+              Click or drag an excel file in to the box below to Predict
             </p>
           </div>
           <div className="dragger">

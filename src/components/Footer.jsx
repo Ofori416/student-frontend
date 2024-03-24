@@ -9,8 +9,8 @@ function Footer() {
           <Link href="/">
             <MdHideImage color="#fcfeff" size={40} />
           </Link>
-          <p className="footer-title">VirtualMane</p>
-          <p>Choose your best hairstyle, look great and thank us later</p>
+          <p className="footer-title">EduAid</p>
+          <p>EduAid's Student Prediction Algorithm acts as a personal mentor, providing guidance based on past performance data or quick assessments, ensuring confident academic decision-making.</p>
         </div>
 
         <div>
