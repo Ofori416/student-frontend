@@ -7,7 +7,6 @@ import {
   ModalHeader,
   ModalBody,
   ModalCloseButton,
-
   useDisclosure,
 } from "@chakra-ui/react";
 function Hero() {

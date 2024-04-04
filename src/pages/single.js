@@ -1,11 +1,22 @@
 import React, { useEffect, useState } from "react";
-import Compressor from "compressorjs";
-import { useToast, VStack, FormControl, FormLabel, Input, Textarea, Button } from "@chakra-ui/react";
+import { Tag, TagLabel, TagLeftIcon } from '@chakra-ui/react';
+import { useToast, VStack, FormControl, FormLabel, Input, Button, Text } from "@chakra-ui/react";
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
+  Stack,
+  StackDivider,
+  Box,
+  Heading,
+  useDisclosure,
+} from "@chakra-ui/react";
 
 import mixpanel from "mixpanel-browser";
 mixpanel.init("c2d2405209ce3c42e4f2953c6859580a");
-import { message, Upload } from "antd";
-import { BsFillInfoCircleFill } from "react-icons/bs";
 import {
   Table,
   Thead,
@@ -19,27 +30,35 @@ import {
 } from '@chakra-ui/react'
 
 function Single() {
-  const [currentFile, setCurrentFile] = useState("");
-  const [quality, setQuality] = useState(0.5);
   const toast = useToast();
-  const [images, setImages] = useState([]);
-  const [gender, setGender] = useState("");
-  const [shape, setShape] = useState("");
-  const [cameraData, setCameraData] = useState(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
 
+  const [responseData, setResponseData] = useState(null);
   const fetchCameraData = async () => {
     try {
-      const response = await fetch("http://localhost:5000/video_detection");
+      const response = await fetch("http://localhost:5001/predict", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          index: formData.indexNumber,
+          email: formData.email,
+          gender: parseInt(formData.gender),
+          level: formData.level,
+          gpa_score: formData.gpaScore,
+          class_mode: formData.classMode,
+          study_mode: parseInt(formData.studyMode),
+          internet_availability: parseInt(formData.internetAvailability),
+        })
+      });
 
       if (response.ok) {
-        const cameraDataResponse = await response.json();
-        setCameraData(cameraDataResponse);
-        console.log('Camera Data Response', cameraDataResponse)
-        const { gender, shape } = detectionResults;
-        setGender(gender);
-        setShape(shape);
-        return { gender, shape };
+        const data = await response.json();
+
+        setResponseData(data);
+        console.log('The response data', responseData);
       } else {
         console.log("API Request Failed");
       }
@@ -47,6 +66,30 @@ function Single() {
       console.error("API Request Error:", error);
     }
   }
+
+
+//   const sendEmail = async (emailAddress) => {
+//     try {
+//       const response = await fetch("/send-email", {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json"
+//         },
+//         body: JSON.stringify({ email: emailAddress })
+//       });
+
+//       if (response.ok) {
+//         const data = await response.json();
+//         console.log(data.message); // Output success message
+//       } else {
+//         console.error("Failed to send email");
+//       }
+//     } catch (error) {
+//       console.error("Error sending email:", error);
+//     }
+//   };
+
+// sendEmail()
 
   const [formData, setFormData] = useState({
     indexNumber: "",
@@ -64,11 +107,17 @@ function Single() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(formData);
-    // You can perform additional actions here, such as sending the form data to a server
+    try {
+      await fetchCameraData();
+    } catch (error) {
+      console.error("Error in handleSubmit:", error);
+    }
   };
+
 
   return (
     <div className="single-parent">
@@ -76,12 +125,109 @@ function Single() {
         <div className="single">
           <p className="title">The Single Student</p>
 
-          {/* <div className="info">
-            <BsFillInfoCircleFill size={30} />
-            <p>
-              Enter your details for Prediction
-            </p>
-          </div> */}
+          <Modal isOpen={isOpen} onClose={onClose} size={"xl"}>
+            <ModalOverlay />
+            <ModalContent>
+              <ModalHeader>Student Prediction Result</ModalHeader>
+              <ModalCloseButton />
+              {Array.isArray(responseData) && responseData.map((data, index) => (
+                <ModalBody>
+                  <Box style={{ display: 'flex', gap: '200px' }}>
+                    <Box key={index}>
+                      <Heading size='xs'>
+                        Index Number
+                      </Heading>
+                      <Text pt='2' fontSize='sm'>
+                        {data.index}
+                      </Text>
+                    </Box>
+                    <Box>
+                      <Heading size='xs'>
+                        Email
+                      </Heading>
+                      <Text pt='2' fontSize='sm'>
+                        {data.email}
+                      </Text>
+                    </Box>
+                  </Box>
+                  <Box style={{ display: 'flex', gap: '247px' }}>
+                    <Box>
+                      <Heading size='xs'>
+                        Gender
+                      </Heading>
+                      <Text pt='2' fontSize='sm'>
+                      {data.gender === 0 ? "Male" : data.gender === 1 ? "Female" : data.gender}
+                      </Text>
+                    </Box>
+                    <Box>
+                      <Heading size='xs'>
+                        Level
+                      </Heading>
+                      <Text pt='2' fontSize='sm'>
+                        {data.level}
+                      </Text>
+                    </Box>
+                  </Box>
+                  <Box style={{ display: 'flex', gap: '163px' }}>
+                    <Box>
+                      <Heading size='xs'>
+                        Internet Availability
+                      </Heading>
+                      <Text pt='2' fontSize='sm'>
+                        {data.internet_availability === 0 ? "Bad" : data.internet_availability === 1 ? "Normal" : data.internet_availability === 2 ? "Good" : data.internet_availability === 3 ? "Stable" : data.internet_availability}
+                      </Text>
+                    </Box>
+                    <Box>
+                      <Heading size='xs'>
+                        GPA Score
+                      </Heading>
+                      <Text pt='2' fontSize='sm'>
+                        3.79
+                      </Text>
+                    </Box>
+                  </Box>
+                  <Stack divider={<StackDivider />} spacing='4'>
+                    <Box style={{ display: 'flex', gap: '215px' }}>
+                      <Box>
+                        <Heading size='xs'>
+                          Class Mode
+                        </Heading>
+                        <Text pt='2' fontSize='sm'>
+                          {data.class_mode}
+                        </Text>
+                      </Box>
+                      <Box>
+                        <Heading size='xs'>
+                          Study Mode
+                        </Heading>
+                        <Text pt='2' fontSize='sm'>
+                        {data.study_mode === 0 ? "Online Resources" : data.study_mode === 1 ? "Lecture Notes" : data.study_mode === 2 ? "Personal Notes" : data.study_mode === 3 ? "Forums" : data.study_mode}
+                        </Text>
+                      </Box>
+                    </Box>
+                    <Box>
+                      <Heading size='xs'>
+                      Prediction{' '}
+                        <Tag size="sm" colorScheme="blue">
+                          <TagLabel>Excellent</TagLabel>
+                      </Tag>
+                      </Heading>
+
+                      <Text pt='2' fontSize='sm'>
+                        {data.message}
+                      </Text>
+                    </Box>
+                    <Button colorScheme='blue' href=""
+                      onClick={(e) => {
+                        e.preventDefault();
+                        onOpen();
+                      }}>Send Email</Button>
+                  </Stack>
+                </ModalBody>
+              ))}
+
+            </ModalContent>
+          </Modal>
 
           <div>
             <form className="forms" onSubmit={handleSubmit}>
@@ -91,7 +237,7 @@ function Single() {
                   <Input
                     type="text"
                     name="indexNumber"
-                    placeholder="First Name"
+                    placeholder="Index Number"
                     borderRadius="lg"
                     onChange={handleChange}
                   />
@@ -142,10 +288,10 @@ function Single() {
                       borderRadius="lg"
                       onChange={handleChange}
                     >
-                      <option value="L400">L400</option>
-                      <option value="L300">L300</option>
-                      <option value="L200">L200</option>
-                      <option value="L100">L100</option>
+                      <option value="0">Bad</option>
+                      <option value="1">Normal</option>
+                      <option value="2">Good</option>
+                      <option value="3">Stable</option>
                     </Select>
                   </FormControl>
                 </FormControl>
@@ -153,7 +299,7 @@ function Single() {
                 <FormControl>
                   <FormLabel>GPA Score</FormLabel>
                   <Input
-                    type="number"
+                    type="decimal"
                     name="gpaScore"
                     placeholder="Enter your GPA Score"
                     borderRadius="lg"
@@ -171,8 +317,8 @@ function Single() {
                       borderRadius="lg"
                       width='auto'
                     >
-                      <option value="option1">LMS</option>
-                      <option value="option2">Class Room</option>
+                      <option value="LMS">LMS</option>
+                      <option value="Class Room">Class Room</option>
                     </Select>
                   </FormControl>
 
@@ -186,10 +332,10 @@ function Single() {
                       onChange={handleChange}
                       width='auto'
                     >
-                      <option value="option1">Online Resources</option>
-                      <option value="option2">Lecture Notes</option>
-                      <option value="option3">Personal Notes</option>
-                      <option value="option3">Forums</option>
+                      <option value="1">Online Resources</option>
+                      <option value="0">Lecture Notes</option>
+                      <option value="2">Personal Notes</option>
+                      <option value="3">Forums</option>
                     </Select>
                   </FormControl>
                 </FormControl>
@@ -232,33 +378,22 @@ function Single() {
                 </Tr>
               </Thead>
               <Tbody>
-                <Tr>
-                  <Td>inches</Td>
-                  <Td>millimetres (mm)</Td>
-                  <Td >25.4</Td>
-                  <Td >25.4</Td>
-                  <Td ><Button colorScheme='blue'>Button</Button></Td>
-
-                </Tr>
-                <Tr>
-                  <Td>feet</Td>
-                  <Td>centimetres (cm)</Td>
-                  <Td >30.48</Td>
-                  <Td >25.4</Td>
-                  <Td ><Button colorScheme='blue'>Button</Button></Td>
-
-                </Tr>
-                <Tr>
-                  <Td>yards</Td>
-                  <Td>metres (m)</Td>
-                  <Td >0.91444</Td>
-                  <Td >25.4</Td>
-                  <Td ><Button colorScheme='blue'>Button</Button></Td>
-
-                </Tr>
+                {Array.isArray(responseData) && responseData.map((data, index) => (
+                  <Tr key={index}>
+                    <Td>{data.index}</Td>
+                    <Td>{data.email}</Td>
+                    <Td>{data.gender === 0 ? "Male" : data.gender === 1 ? "Female" : data.gender}</Td> {/* Modify this line */}
+                    <Td>{data.level}</Td>
+                    <Td><Button key={data.index} colorScheme='blue' onClick={(e) => {
+                      e.preventDefault();
+                      onOpen();
+                    }}>View More</Button></Td>
+                  </Tr>
+                ))}
               </Tbody>
             </Table>
           </TableContainer>
+
         </div>
       </div>
     </div>
