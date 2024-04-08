@@ -237,7 +237,7 @@ function Single() {
                       Prediction{' '}
                         <Tag size="sm" colorScheme="blue">
                           <TagLabel>Excellent</TagLabel>
-                      </Tag>
+                        </Tag>
                       </Heading>
 
                       <Text pt='2' fontSize='sm'>
