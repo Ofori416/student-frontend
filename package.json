@@ -12,7 +12,6 @@
     "@chakra-ui/react": "^2.7.0",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@next/font": "13.1.6",
     "antd": "^5.6.1",
     "axios": "^1.6.8",
     "compressorjs": "^1.2.1",
