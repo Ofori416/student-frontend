@@ -37,7 +37,7 @@ function Single() {
   const [responseData, setResponseData] = useState(null);
   const fetchCameraData = async () => {
     try {
-      const response = await fetch("http://localhost:5001/predict", {
+      const response = await fetch("http://localhost:5001/predict/s", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -107,6 +107,33 @@ function Single() {
     setFormData({ ...formData, [name]: value });
   };
 
+  const [emailData, setEmailData] = useState({
+    email: "",
+    message: ""}
+    );
+
+  const sendEmail = async (emailAddress) => {
+    try {
+      const response = await fetch("http://localhost:5001/send-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email: emailAddress.email, message: emailAddress.message})
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data.message); // Output success message
+      } else {
+        console.error("Failed to send email");
+      }
+    } catch (error) {
+      console.error("Error sending email:", error);
+    }
+  };
+
+  sendEmail(emailData)
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -182,7 +209,7 @@ function Single() {
                         GPA Score
                       </Heading>
                       <Text pt='2' fontSize='sm'>
-                        3.79
+                        {data.gpa_score}
                       </Text>
                     </Box>
                   </Box>
@@ -219,9 +246,13 @@ function Single() {
                     </Box>
                     <Button colorScheme='blue' href=""
                       onClick={(e) => {
+                        setEmailData({
+                          email: data.email,
+                          message: data.message
+                      });
+                      console.log("The email data", emailData);
                         e.preventDefault();
-                        onOpen();
-                      }}>Send Email</Button>
+                       }}>Send Email</Button>
                   </Stack>
                 </ModalBody>
               ))}

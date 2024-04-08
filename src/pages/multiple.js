@@ -39,7 +39,6 @@ function Multiple() {
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [responseData, setResponseData] = useState(null);
-  const [emailData, setEmailData] = useState(null);
 
   const [selectedTableData, setSelectedTableData] = useState(null);
 
@@ -113,6 +112,10 @@ const props = {
     }
   }, [showToast]);
 
+  const [emailData, setEmailData] = useState({
+    email: "",
+    message: ""}
+    );
 
   const sendEmail = async (emailAddress) => {
     try {
@@ -121,7 +124,7 @@ const props = {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ email: emailAddress })
+        body: JSON.stringify({ email: emailAddress.email, message: emailAddress.message})
       });
 
       if (response.ok) {
@@ -257,7 +260,10 @@ const props = {
                     </Box>
                     <Button colorScheme='blue' href=""
                       onClick={(e) => {
-                        setEmailData(selectedTableData.email);
+                        setEmailData({
+                          email: selectedTableData.email,
+                          message: selectedTableData.message
+                      });
                         console.log("The email data", emailData);
                         e.preventDefault();
                         onOpen();

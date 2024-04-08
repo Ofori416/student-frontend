@@ -26,31 +26,36 @@ def get_gpa_category(gpa_score):
 
 def get_message(prediction, gpa_score, internet_availability, study_mode):
     if prediction == 0:
-        return f"High probability of success: Based on the analysis of the student's data, including their GPA of {gpa_score}, which is considered good, along with the presence of a {internet_availability} internet network and their choice of a practical {study_mode} mode, there is a high probability that the student can achieve excellent results. With consistent dedication and hard work, the student has the potential to attain a first-class degree if they continue to study diligently."
+        return f"Based on our analysis of your academic data, including your GPA score of {gpa_score}, which is considered good, along with the availability of {internet_availability} internet network and your preference for a practical {study_mode} mode, we believe there is a high probability of your success. With consistent dedication and hard work, you have the potential to achieve excellent results and even attain a first-class degree if you continue to study diligently. We encourage you to stay focused, remain motivated, and make the most out of your academic journey."
     elif prediction == 1:
-        return f"Promising probability of success: With a commendable GPA of {gpa_score}, indicative of strong academic performance, complemented by {internet_availability} internet access and an engaging {study_mode} study mode, the student's prospects for success are promising. By maintaining their current level of dedication and continuing to actively engage in their studies, the student is well-positioned to achieve notable academic accomplishments and realize their educational goals."
+        return f"Based on our analysis of your academic data, including your GPA score of {gpa_score}, which is considered good, along with the availability of {internet_availability} internet network and your preference for a practical {study_mode} mode, we believe there is a high probability of your success. With consistent dedication and hard work, you have the potential to achieve excellent results and even attain a second upper class degree if you continue to study diligently. We encourage you to stay focused, remain motivated, and make the most out of your academic journey."
     elif prediction == 2:
-        return f"Moderate probability of success: Considering the student's GPA of {gpa_score}, which indicates a satisfactory academic performance, coupled with a {internet_availability} internet connection and a conventional {study_mode} study mode, there exists a moderate likelihood of achieving success. With concerted effort and dedication, the student has the potential to improve their academic standing and enhance their prospects for success."
+        return f"Based on our analysis of your academic data, including your GPA score of {gpa_score}, which is considered satisfactory for a second lower class, along with the availability of {internet_availability} internet network and your preference for a conventional {study_mode} mode, we believe there is a moderate probability of your success.With concerted effort and dedication, you have the potential to improve your academic standing and enhance your prospects for success. While achieving a first-class degree may be challenging, focusing on consistent improvement and making the most out of your academic journey will greatly contribute to your overall success. We encourage you to remain focused, stay motivated, and continue striving for excellence in your studies."
     elif prediction == 3:
-        return f"Low probability of success: Despite efforts, the student's GPA of {gpa_score} suggests challenges in academic performance. Coupled with {internet_availability} internet access and a passive {study_mode} study mode, the likelihood of achieving success is low. However, with personalized support, targeted interventions, and a commitment to academic improvement, the student can overcome obstacles and work towards enhancing their academic standing."
+        return f"Based on our analysis of your academic data, you have a low probability of success. Despite efforts, the student's GPA of {gpa_score} suggests challenges in academic performance. Coupled with {internet_availability} internet access and a passive {study_mode} study mode, the likelihood of achieving success is low. However, with personalized support, targeted interventions, and a commitment to academic improvement, the student can overcome obstacles and work towards enhancing their academic standing."
     elif prediction == 4:
-        return f"Very low probability of success: The student's GPA of {gpa_score} reflects significant academic struggles, indicating substantial room for improvement. Combined with {internet_availability} internet availability and a passive {study_mode} study mode, the likelihood of achieving success is very low. However, with dedicated support, tailored educational interventions, and a proactive approach to learning, the student can embark on a path towards academic improvement and strive to overcome existing challenges"
+        return f"Based on our analysis of your academic data, you have a very low probability of success: The student's GPA of {gpa_score} reflects significant academic struggles, indicating substantial room for improvement. Combined with {internet_availability} internet availability and a passive {study_mode} study mode, the likelihood of achieving success is very low. However, with dedicated support, tailored educational interventions, and a proactive approach to learning, the student can embark on a path towards academic improvement and strive to overcome existing challenges"
     else:
         return "Unknown prediction"
 
 @app.route('/predict', methods=['POST'])
 def multiPredict():
     try:
-        if 'file' not in request.files:
-            return jsonify({'error': 'No file part'}), 400
+        if 'file' in request.files:
+            file = request.files['file']
+            # Check if the file has a permitted extension (Excel file)
+            if file.filename.split('.')[-1] != 'xlsx':
+                return jsonify({'error': 'Only Excel files (.xlsx) are allowed'}), 400
 
-        file = request.files['file']
-        # Check if the file has a permitted extension (Excel file)
-        if file.filename.split('.')[-1] != 'xlsx':
-            return jsonify({'error': 'Only Excel files (.xlsx) are allowed'}), 400
+            # Read the Excel file
+            df = pd.read_excel(file)
+        else:
+            # Check if the request contains JSON data
+            if request.json is None:
+                return jsonify({'error': 'No file or JSON data provided'}), 400
 
-        # Read the Excel file
-        df = pd.read_excel(file)
+            # Load JSON data into a DataFrame
+            df = pd.DataFrame(request.json)
 
         # Check if all required fields are present in the DataFrame
         required_fields = ['index', 'email', 'gender', 'level', 'gpa_score', 'class_mode', 'study_mode', 'internet_availability']
@@ -64,7 +69,8 @@ def multiPredict():
         prediction_list = []
         for _, row in df.iterrows():
             # Preprocess data if necessary and make predictions
-            prediction = loaded_model.predict([[row['gender'], row['internet_availability'], row['study_mode'], get_gpa_category(row['gpa_score'])]])
+            features = [[row['gender'], row['internet_availability'], row['study_mode'], get_gpa_category(row['gpa_score'])]]
+            prediction = loaded_model.predict(features)
             message = get_message(prediction, row['gpa_score'], row['internet_availability'], row['study_mode'])
             prediction_dict = {
                 'index': row['index'],
@@ -80,27 +86,83 @@ def multiPredict():
             }
             prediction_list.append(prediction_dict)
 
+
         return jsonify(prediction_list)
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 
-def send_email(receiver_email):
+
+@app.route('/predict/s', methods=['POST'])
+def singlePredict():
+    try:
+        # Check if the request contains JSON data
+        if request.json is None:
+            return jsonify({'error': 'No JSON data provided'}), 400
+
+        # Get JSON data from the request
+        json_data = request.json
+
+        # If the JSON data is not a list, wrap it in a list
+        if not isinstance(json_data, list):
+            json_data = [json_data]
+
+        # Convert 'gpa_score' value to float
+        for record in json_data:
+            record['gpa_score'] = float(record['gpa_score'])
+
+        # Perform predictions
+        prediction_list = []
+        for row in json_data:
+            # Preprocess data if necessary and make predictions
+            features = [[row['gender'], row['internet_availability'], row['study_mode'], get_gpa_category(row['gpa_score'])]]
+            prediction = loaded_model.predict(features)
+            message = get_message(prediction, row['gpa_score'], row['internet_availability'], row['study_mode'])
+            prediction_dict = {
+                'index': row.get('index', None),
+                'gender': row.get('gender', None),
+                'email': row.get('email', None),
+                'class_mode' : row.get('class_mode', None),
+                'level': row.get('level', None),
+                'internet_availability': row.get('internet_availability', None),
+                'study_mode': row.get('study_mode', None),
+                'gpa_score': row.get('gpa_score', None),
+                'prediction': int(prediction[0]),
+                'message': message,
+            }
+            prediction_list.append(prediction_dict)
+
+        return jsonify(prediction_list)
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+def send_email(receiver_email, message_content):
     # Email configuration
     sender_email = "redeemerdela419@gmail.com"  # Replace with your email address
     password = "ncxycyngzujaarsy"  # Replace with your email password
     smtp_server = "smtp.gmail.com"  # Replace with your SMTP server address
     smtp_port = 587  # Replace with your SMTP server port
 
+    sender_name = "EduAid"
+
     # Create message container
     message = MIMEMultipart()
-    message['From'] = sender_email
+    message['From'] = f"{sender_name} <{sender_email}>"
     message['To'] = receiver_email
-    message['Subject'] = "Subject of the Email"
+    message['Subject'] = "Student Academic Report"
 
     # Email content
-    body = "This is the body of the email."
+    body = f"""
+Dear Student,
+
+{message_content}
+
+Best regards,
+EduAid Team
+"""
     message.attach(MIMEText(body, 'plain'))
 
     # Establish SMTP connection
@@ -116,12 +178,14 @@ def send_email(receiver_email):
 @app.route('/send-email', methods=['POST'])
 def send_email_route():
     data = request.get_json()
-    if 'email' in data:
+    if 'email' in data and 'message' in data:
         email_address = data['email']
-        send_email(email_address)
+        message_content = data['message']
+        send_email(email_address, message_content)
         return jsonify({'message': 'Email sent successfully'}), 200
     else:
-        return jsonify({'error': 'Email address not provided'}), 400
+        return jsonify({'error': 'Email address or message content not provided'}), 400
+
 
 
 if __name__ == "__main__":

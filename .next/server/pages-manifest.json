@@ -2,8 +2,7 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/": "pages/index.js",
-  "/404": "pages/404.js",
+  "/single": "pages/single.js",
   "/multiple": "pages/multiple.js",
-  "/single": "pages/single.js"
+  "/": "pages/index.js"
 }
