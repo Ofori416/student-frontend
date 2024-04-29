@@ -16,10 +16,10 @@ function NavBar() {
             <Link href="/">Home</Link>
           </li>
           <li>
-            <Link href="/single">Single</Link>
+            <Link href="/single">Single Student</Link>
           </li>
           <li>
-            <Link href="/multiple">Multiple</Link>
+            <Link href="/multiple">Multiple Student</Link>
           </li>
           <li>
             <Link href="sponsor">Sponsor</Link>

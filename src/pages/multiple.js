@@ -51,7 +51,7 @@ function Multiple() {
     formData.append("file", file);
 
     try {
-        const response = await fetch("http://localhost:5001/predict", {
+        const response = await fetch("http://localhost:3000/predict", {
             method: "POST",
             body: formData,
         });
@@ -119,7 +119,7 @@ const props = {
 
   const sendEmail = async (emailAddress) => {
     try {
-      const response = await fetch("http://localhost:5001/send-email", {
+      const response = await fetch("http://localhost:3000/send-email", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

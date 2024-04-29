@@ -13,6 +13,8 @@ with open(pickle_file_path, 'rb') as file:
 
 app = Flask(__name__)
 CORS(app)
+# CORS(app, resources={r"/*": {"origins": ["https://grumpy-apples-relax.loca.lt", "http://localhost:3000"]}})
+
 
 def get_gpa_category(gpa_score):
     if 4.0 >= gpa_score >= 3.6:
