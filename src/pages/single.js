@@ -29,6 +29,17 @@ import {
   TableContainer,
 } from '@chakra-ui/react'
 
+const predictionInfo = (pred) => {
+  const map = {
+    0: { label: 'First Class', color: 'green' },
+    1: { label: 'Second Upper', color: 'blue' },
+    2: { label: 'Second Lower', color: 'yellow' },
+    3: { label: 'Third Class', color: 'orange' },
+    4: { label: 'Fail', color: 'red' },
+  };
+  return map[pred] ?? { label: 'Unknown', color: 'gray' };
+};
+
 function Single() {
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -133,8 +144,6 @@ function Single() {
     }
   };
 
-  sendEmail(emailData)
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(formData);
@@ -235,8 +244,8 @@ function Single() {
                     <Box>
                       <Heading size='xs'>
                       Prediction{' '}
-                        <Tag size="sm" colorScheme="blue">
-                          <TagLabel>Excellent</TagLabel>
+                        <Tag size="sm" colorScheme={predictionInfo(data.prediction).color}>
+                          <TagLabel>{predictionInfo(data.prediction).label}</TagLabel>
                         </Tag>
                       </Heading>
 
@@ -246,13 +255,9 @@ function Single() {
                     </Box>
                     <Button colorScheme='blue' href=""
                       onClick={(e) => {
-                        setEmailData({
-                          email: data.email,
-                          message: data.message
-                      });
-                      console.log("The email data", emailData);
                         e.preventDefault();
-                       }}>Send Email</Button>
+                        sendEmail({ email: data.email, message: data.message });
+                      }}>Send Email</Button>
                   </Stack>
                 </ModalBody>
               ))}

@@ -33,6 +33,17 @@ import {
 
 const { Dragger } = Upload;
 
+const predictionInfo = (pred) => {
+  const map = {
+    0: { label: 'First Class', color: 'green' },
+    1: { label: 'Second Upper', color: 'blue' },
+    2: { label: 'Second Lower', color: 'yellow' },
+    3: { label: 'Third Class', color: 'orange' },
+    4: { label: 'Fail', color: 'red' },
+  };
+  return map[pred] ?? { label: 'Unknown', color: 'gray' };
+};
+
 function Multiple() {
   const [currentFile, setCurrentFile] = useState("");
   const [showToast, setShowToast] = useState(false);
@@ -85,9 +96,8 @@ const props = {
 
         const droppedFiles = e.dataTransfer.files;
         for (let i = 0; i < droppedFiles.length; i++) {
-            await processData(droppedFiles[i]); // Wait for processData to finish
+            await processData(droppedFiles[i]);
         }
-        await fetchData(); // Wait for fetchData to finish
     },
 };
 
@@ -137,9 +147,6 @@ const props = {
       console.error("Error sending email:", error);
     }
   };
-
-  sendEmail(emailData)
-
 
   return (
     <div className="single-parent">
@@ -249,8 +256,8 @@ const props = {
                     <Box>
                       <Heading size='xs'>
                       Prediction{' '}
-                        <Tag size="sm" colorScheme="blue">
-                          <TagLabel>Excellent</TagLabel>
+                        <Tag size="sm" colorScheme={predictionInfo(selectedTableData.prediction).color}>
+                          <TagLabel>{predictionInfo(selectedTableData.prediction).label}</TagLabel>
                       </Tag>
                       </Heading>
 
@@ -260,13 +267,8 @@ const props = {
                     </Box>
                     <Button colorScheme='blue' href=""
                       onClick={(e) => {
-                        setEmailData({
-                          email: selectedTableData.email,
-                          message: selectedTableData.message
-                      });
-                        console.log("The email data", emailData);
                         e.preventDefault();
-                        onOpen();
+                        sendEmail({ email: selectedTableData.email, message: selectedTableData.message });
                       }}>Send Email</Button>
                   </Stack>
                 </ModalBody>

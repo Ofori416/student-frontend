@@ -24,19 +24,50 @@ def get_gpa_category(gpa_score):
     else:
         return -1  # Return -1 for any GPA score outside the specified ranges
 
+INTERNET_LABELS = {0: "poor", 1: "average", 2: "good", 3: "stable"}
+STUDY_LABELS = {0: "lecture notes", 1: "online resources", 2: "personal notes", 3: "online forums"}
+
 def get_message(prediction, gpa_score, internet_availability, study_mode):
+    internet = INTERNET_LABELS.get(internet_availability, str(internet_availability))
+    study = STUDY_LABELS.get(study_mode, str(study_mode))
+
     if prediction == 0:
-        return f"Based on our analysis of your academic data, including your GPA score of {gpa_score}, which is considered good, along with the availability of {internet_availability} internet network and your preference for a practical {study_mode} mode, we believe there is a high probability of your success. With consistent dedication and hard work, you have the potential to achieve excellent results and even attain a first-class degree if you continue to study diligently. We encourage you to stay focused, remain motivated, and make the most out of your academic journey."
+        return (
+            f"Outstanding academic profile! With a GPA of {gpa_score} and a strong reliance on {study}, "
+            f"you are on track for a First Class degree. Your {internet} internet connectivity supports your learning effectively. "
+            f"Keep maintaining this level of discipline — consider exploring research opportunities, internships, or advanced coursework "
+            f"to further distinguish your academic record."
+        )
     elif prediction == 1:
-        return f"Based on our analysis of your academic data, including your GPA score of {gpa_score}, which is considered good, along with the availability of {internet_availability} internet network and your preference for a practical {study_mode} mode, we believe there is a high probability of your success. With consistent dedication and hard work, you have the potential to achieve excellent results and even attain a second upper class degree if you continue to study diligently. We encourage you to stay focused, remain motivated, and make the most out of your academic journey."
+        return (
+            f"Strong academic standing. Your GPA of {gpa_score}, combined with your use of {study} and {internet} internet access, "
+            f"puts you on a clear path to a Second Upper Class degree. "
+            f"To push toward a First Class, focus on improving weaker subject areas, increase engagement with {study}, "
+            f"and seek feedback from lecturers consistently."
+        )
     elif prediction == 2:
-        return f"Based on our analysis of your academic data, including your GPA score of {gpa_score}, which is considered satisfactory for a second lower class, along with the availability of {internet_availability} internet network and your preference for a conventional {study_mode} mode, we believe there is a moderate probability of your success.With concerted effort and dedication, you have the potential to improve your academic standing and enhance your prospects for success. While achieving a first-class degree may be challenging, focusing on consistent improvement and making the most out of your academic journey will greatly contribute to your overall success. We encourage you to remain focused, stay motivated, and continue striving for excellence in your studies."
+        return (
+            f"Moderate academic performance. Your GPA of {gpa_score} places you in Second Lower Class territory. "
+            f"Your current study approach using {study} is a start, but your {internet} internet access may be limiting your resources. "
+            f"Consider supplementing with group study sessions, visiting the library for stable internet, "
+            f"and actively engaging with course materials beyond what is covered in class."
+        )
     elif prediction == 3:
-        return f"Based on our analysis of your academic data, you have a low probability of success. Despite efforts, the student's GPA of {gpa_score} suggests challenges in academic performance. Coupled with {internet_availability} internet access and a passive {study_mode} study mode, the likelihood of achieving success is low. However, with personalized support, targeted interventions, and a commitment to academic improvement, the student can overcome obstacles and work towards enhancing their academic standing."
+        return (
+            f"Your academic performance needs significant attention. A GPA of {gpa_score} indicates recurring challenges in key subject areas. "
+            f"Relying primarily on {study} with {internet} internet access is not providing enough support for your learning needs. "
+            f"We strongly recommend meeting with your academic advisor, attending tutoring sessions, "
+            f"and restructuring your study schedule to include more consistent and varied study methods."
+        )
     elif prediction == 4:
-        return f"Based on our analysis of your academic data, you have a very low probability of success: The student's GPA of {gpa_score} reflects significant academic struggles, indicating substantial room for improvement. Combined with {internet_availability} internet availability and a passive {study_mode} study mode, the likelihood of achieving success is very low. However, with dedicated support, tailored educational interventions, and a proactive approach to learning, the student can embark on a path towards academic improvement and strive to overcome existing challenges"
+        return (
+            f"Critical academic risk. Your GPA of {gpa_score} reflects serious difficulty keeping up with academic demands. "
+            f"With {internet} internet access and a dependency on {study} alone, your current approach is insufficient. "
+            f"Immediate action is required — speak with your department's student support team, consider course load adjustments, "
+            f"and build a structured daily study plan. Recovery is possible with the right intervention and commitment."
+        )
     else:
-        return "Unknown prediction"
+        return "Prediction could not be determined. Please verify the submitted data and try again."
 
 @app.route('/predict', methods=['POST'])
 def multiPredict():
@@ -50,12 +81,11 @@ def multiPredict():
             # Read the Excel file
             df = pd.read_excel(file)
         else:
-            # Check if the request contains JSON data
-            if request.json is None:
+            json_body = request.get_json(silent=True)
+            if json_body is None:
                 return jsonify({'error': 'No file or JSON data provided'}), 400
 
-            # Load JSON data into a DataFrame
-            df = pd.DataFrame(request.json)
+            df = pd.DataFrame(json_body)
 
         # Check if all required fields are present in the DataFrame
         required_fields = ['index', 'email', 'gender', 'level', 'gpa_score', 'class_mode', 'study_mode', 'internet_availability']
@@ -97,12 +127,9 @@ def multiPredict():
 @app.route('/predict/s', methods=['POST'])
 def singlePredict():
     try:
-        # Check if the request contains JSON data
-        if request.json is None:
+        json_data = request.get_json(silent=True)
+        if json_data is None:
             return jsonify({'error': 'No JSON data provided'}), 400
-
-        # Get JSON data from the request
-        json_data = request.json
 
         # If the JSON data is not a list, wrap it in a list
         if not isinstance(json_data, list):
