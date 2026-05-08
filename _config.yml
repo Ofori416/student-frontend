@@ -1,0 +1,9 @@
+exclude:
+  - node_modules/
+  - src/backend/venv/
+  - src/backend/__pycache__/
+  - .next/
+  - "*.pyc"
+  - "*.pkl"
+  - package.json
+  - package-lock.json
